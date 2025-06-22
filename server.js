@@ -18,13 +18,20 @@ app.post('/', async (req, res) => {
     // Validate request
     if (!req.body) {
         return res.status(400).json({ 
-            fulfillmentMessages: [{
-                text: { text: ["Invalid request format"] }
-            }]
+            fulfillmentResponse: {
+                messages: [{
+                    responseType: "RESPONSE_TYPE_TEXT",
+                    text: { text: ["Invalid request format"] }
+                }]
+            }
         });
     }
 
-    const userQuery = req.body.text || "How can I help?";
+    const userQuery = req.body.text || 
+                     req.body.queryResult?.queryText || 
+                     req.body.sessionInfo?.parameters?.text || 
+                     "How can I help?";
+    
     console.log("Processing query:", userQuery);
 
     try {
@@ -42,17 +49,23 @@ app.post('/', async (req, res) => {
         console.log("Generated response:", responseText);
 
         res.json({
-            fulfillmentMessages: [{
-                text: { text: [responseText] }
-            }]
+            fulfillmentResponse: {
+                messages: [{
+                    responseType: "RESPONSE_TYPE_TEXT",
+                    text: { text: [responseText] }
+                }]
+            }
         });
 
     } catch (error) {
         console.error("API Error:", error);
         res.status(500).json({
-            fulfillmentMessages: [{
-                text: { text: ["Sorry, I'm experiencing technical difficulties. Please try again later."] }
-            }]
+            fulfillmentResponse: {
+                messages: [{
+                    responseType: "RESPONSE_TYPE_TEXT",
+                    text: { text: ["Sorry, I'm experiencing technical difficulties. Please try again later."] }
+                }]
+            }
         });
     }
 });
